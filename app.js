@@ -6,8 +6,7 @@ const User =  require('./models/user').User;
 const router_app = require('./routes_app');
 const session_middleware = require('./middlewares/session');
 
-
-//setting
+//SETTING
 app.set('view engine', 'jade');
 
 //MIDLLEWARE
@@ -25,7 +24,6 @@ app.use('/app', session_middleware);
 
 //ROUTES
 app.get('/', (req,res)=>{
-    console.log(req.session.user_id);
     res.render('index')
 });
 
@@ -41,15 +39,24 @@ app.get('/login',(req,res)=>{
 });
 
 app.post('/session', (req,res)=>{
-    User.findOne({email: req.body.correo, password: req.body.password},(err,user)=>{
-        req.session.user_id = user._id;
-        res.redirect('/app')
+    User.findOne({email:req.body.correo, password:req.body.password}, (err,user)=>{
+        if(err){
+            console.log(err);
+            res.redirect('/login');
+        }
+        if(!user){
+            console.log('Tu usuario no existe');
+            res.redirect('/login');
+        }else{
+            console.log(req.session.user_id);
+            req.session.user_id = user._id;
+            res.redirect('/app')
+        }
     });
 });
 
 app.post('/users', (req,res)=>{
-    const user = new User ({email: req.body.correo, 
-                            password: req.body.password});
+    const user = new User ({email: req.body.correo, password:req.body.password});
     user.save().then((us)=>{
         res.send('Guardamos la informacion exitosamente');
     },(err)=>{
@@ -59,9 +66,7 @@ app.post('/users', (req,res)=>{
         }
     });   
 });
-    // console.log('Usuario ingresado: '+ req.body.correo);
-    // console.log('Contrasena ingresado: '+ req.body.password);
-    // res.render('login')
+
 app.listen(3000, ()=>{
     console.log('SERVIDOR ON');
     
