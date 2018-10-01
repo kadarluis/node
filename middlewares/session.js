@@ -1,19 +1,19 @@
 const User =  require('../models/user').User;
-const session = require('express-session');
 
-module.exports = (req,res,next)=>{
-    if(!req.session.user_id){
-        res.redirect('/login');
-    }
-    else {
-        User.findById(req.session.user_id,(err,user)=>{
-            if(err){
-                console.log(err);
-                res.redirect('/login');
-            }else{
-                res.locals = { user: user };
-                next();                
-            };
-        });    
-    }
+module.exports = (req, res) => {
+    User.findOne({email:req.body.correo, password:req.body.password}, (err,user)=>{
+        if(err){
+            console.log('entro a error');
+            console.log(err);
+            res.redirect('/login');
+        }
+        if(!user){
+            console.log('Tu usuario no existe');
+            res.redirect('/login');
+        }else{
+            console.log(req.session.user_id);
+            req.session.user_id = user._id;
+            res.redirect('/app')
+        }
+    });
 };
